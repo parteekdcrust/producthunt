@@ -4,7 +4,7 @@ class Product {
     noOfUpvotes=0;
     noOfComments=0;
 
-    constructor(name,visit_url,icon_url,long_desp,short_desp,created_by,created_on,updated_by,updated_on)
+    constructor(name,visit_url,icon_url,long_desp,short_desp,created_by,updated_by)
     {
         this.name=name;
         this.visit_url=visit_url;
@@ -12,9 +12,7 @@ class Product {
         this.long_desp=long_desp;
         this.short_desp= short_desp;
         this.created_by=created_by;
-        this.created_on=created_on;
         this.updated_by=updated_by;
-        this.updated_on=updated_on;
     }
     
     addComments(comment) {

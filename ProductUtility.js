@@ -2,6 +2,7 @@
 const specialCharactersArray =  [',','$','!','@','#','$','%','^','&','*'];
 
 const isValidName = (name) => {
+    if(!isNaN(name)) return false;
     if(!name || name.length==0 || name.length > 100) return false;
     for(let i=0;i<name.length;i++)
     {
@@ -13,6 +14,7 @@ const isValidName = (name) => {
 }
 
 const isValidLongDesp = (desp) => {
+    if(!isNaN(desp)) return false;
     if(desp.length > 500) return false;
     for(let i=0;i<desp.length;i++)
     {
@@ -23,6 +25,7 @@ const isValidLongDesp = (desp) => {
     return true;
 }
 const isValidShortDesp = (desp) => {
+    if(!isNaN(desp)) return false;
     if(desp.length > 100) return false;
     for(let i=0;i<desp.length;i++)
     {
@@ -34,6 +37,7 @@ const isValidShortDesp = (desp) => {
 }
 
 const isValidURL = (url) => {
+    if(!isNaN(url)) return false;
     const newUrl = new URL(url);
     if(newUrl.protocol=='http:' || newUrl.protocol=='https:') {
         return true;
@@ -42,37 +46,44 @@ const isValidURL = (url) => {
 }
 
 
-const isExtraData= (productInput) =>{
-   return Object.keys(productInput).length > 12;   
+const isValidKeys= (productInput) =>{
+    const keys=["name","visit_url","icon_url","long_desp","short_desp","created_by","updated_by","comments","upvote","tags"] //required keys
+    let inputKeys = Object.keys(productInput);
+    // console.log(inputKeys);
+    for(let i=0;i<inputKeys.length;i++)
+    {
+        if(!keys.includes(inputKeys[i])) return false;
+    }
+    return true;
 }
 
 
+
 const isValidInputProduct=(productInput)=>{
-    if(isExtraData(productInput)) 
+    if(!isValidKeys(productInput)) 
     {
-        return {err:"Extra fields in the body"};
+        return "Invalid Keys";
     }
     else if(!isValidName(productInput["name"])) 
     {
-        return {err: "Inavlid name field"};
+        return "Invalid name field";
     }
     else if(!isValidShortDesp(productInput["short_desp"]))
     {
-        return {err: "Inavlid short description"};
+        return "Invalid short description";
     }
     else if(!isValidLongDesp(productInput["long_desp"]))
     {
-        return {err: "Inavlid long description"};
+        return "Invalid long description";
     } 
     else if(!isValidURL(productInput["icon_url"]))
     {
-        return {err: "Inavlid Url"};
+        return "Invalid Url";
     }
     else if(!isValidURL(productInput["visit_url"]))
     {
-        return {err: "Inavlid Url"};
+        return "Invalid Url";
     }
-    
     return;
 
 }

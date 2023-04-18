@@ -12,8 +12,8 @@ let getProductById = async (id) => {
 let addProduct = async (productInput) => {
 
   //extracting values from input body
-  let {name,visit_url,icon_url,long_desp,short_desp,created_by,created_on,updated_by,updated_on,comments,upvote,tags}=productInput; //destructuring input json
-  const productObject = new model.Product(name,visit_url,icon_url,long_desp,short_desp,created_by,created_on,updated_by,updated_on);
+  let {name,visit_url,icon_url,long_desp,short_desp,created_by,updated_by,comments,upvote,tags}=productInput; //destructuring input json
+  const productObject = new model.Product(name,visit_url,icon_url,long_desp,short_desp,created_by,updated_by);
 
   for(let element of comments)
   {
