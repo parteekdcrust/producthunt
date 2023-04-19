@@ -21,17 +21,90 @@ connection.connect((err) => {
 const query = util.promisify(connection.query).bind(connection);
 
 
+
+const modify = (element)=>{
+  let arr = element.split("|");
+  arr.forEach((currEle,index,arr)=>{
+      arr[index] = JSON.parse(currEle);
+  });
+  return arr;
+} 
+
+
 ////1. GET METHOD//////
 let getProductsFromDB = async (id) => {
   let detailedProduct;
   //this will fetch all products details including images and comments and no_of upvotes if any in detailedProduct
-  detailedProduct= await query('SELECT p.id,p.name,p.short_desp,p.visit_url,p.icon_url,p.long_desp,created_on,created_by,updated_on,updated_by,GROUP_CONCAT(DISTINCT image.url SEPARATOR ",") AS images, GROUP_CONCAT(DISTINCT comment.desp SEPARATOR ",") AS comments, COUNT(DISTINCT upvote.user_id) as upvote_count FROM product p left JOIN image ON image.prod_id = p.id left JOIN comment ON comment.prod_id = p.id LEFT JOIN upvote ON upvote.prod_id = p.id GROUP BY p.id');
+  detailedProduct= await query(`SELECT 
+  p. id,
+  p.name,
+  p.short_desp,
+  p.visit_url,
+  p.icon_url,
+  p.long_desp,
+  p.created_on,
+  p.created_by,
+  p.updated_on,
+  p.updated_by,
+  (
+      SELECT 
+      group_concat(JSON_OBJECT(
+                  'id', t.id,
+                  'tag', t.tag
+              ) separator "| " )
+              
+          
+      FROM 
+          tag t
+          JOIN product_tag pt ON t.id = pt.tag_id
+      WHERE 
+          pt.prod_id = p.id
+  ) AS tags,
+  (
+      SELECT 
+      group_concat(JSON_OBJECT(
+                  'id', i.id,
+                  'url', i.url
+              ) separator "| ")
+              
+          
+      FROM 
+          image i
+      WHERE 
+          i.prod_id = p.id
+  ) AS images,
+  (
+      SELECT 
+      group_concat(JSON_OBJECT(
+                  'id', c.id,
+                  'description', c.desp,
+                  'created_by' , c.user_id
+              ) separator "| ")
+              
+          
+      FROM 
+          comment c
+      WHERE 
+          c.prod_id = p.id
+  ) AS comments,
+  (	
+  select
+  COUNT(user_id) 
+      from upvote u
+      where u.prod_id=p.id
+  ) as upvote_count 
+  FROM 
+  product p
+order by p.id`);
+  // console.log(detailedProduct);
   //this map function will convert image and comment field value of every product which was earlier a string into array in detailedProduct
   detailedProduct = detailedProduct.map(row => ({
   ...row,
-  images: row.images ? row.images.split(','):[],
-  comments: row.comments ? row.comments.split(','):[]
+  tags: row.tags ? modify(row.tags):[],
+  images: row.images ? modify(row.images):[],
+  comments: row.comments ? modify(row.comments):[]
   }));
+  // console.log(detailedProduct);
   id=Number(id);
   //this will return result of /product/id
   if(id)
@@ -44,8 +117,8 @@ let getProductsFromDB = async (id) => {
   {
     let homePageProducts=[];
     detailedProduct.forEach((ele)=>{
-    const {id,name,short_desp,icon_url,visit_url,upvote_count,comments}=ele;
-    let product={id,name,short_desp,icon_url,visit_url,upvote_count,comments_count:comments.length};
+    const {id,name,short_desp,icon_url,visit_url,upvote_count,comments,created_on,updated_on,tags}=ele;
+    let product={id,name,short_desp,icon_url,visit_url,created_on,updated_on,tags,upvote_count,comments_count:comments.length};
     homePageProducts.push(product);
     });
     return homePageProducts;
@@ -62,15 +135,23 @@ const getNoOfProductsQuery = `SELECT COUNT(id) as cp FROM product `;
 let addProductToDB = async (productInput) => {
 
     //validation for duplicate entry (Business Logic)
-    let countOfProductByName = await query(getNoOfProductsQuery + `WHERE name = "${productInput["name"]}" `);
-    if(countOfProductByName[0].cp) return "err1";
-    let countOfProductByUrl = await query(getNoOfProductsQuery + `WHERE visit_url = "${productInput["visit_url"]}" `);
-    if(countOfProductByUrl[0].cp) return "err2";
+    try {
+      let countOfProductByName = await query(getNoOfProductsQuery + `WHERE name = "${productInput["name"]}" `);
+      let countOfProductByUrl = await query(getNoOfProductsQuery + `WHERE visit_url = "${productInput["visit_url"]}" `);
+      if(countOfProductByName[0].cp || countOfProductByUrl[0].cp)
+      {
+        throw new ReferenceError("Duplicate Entry");
+      }  
+    } catch (error) {
+      console.log(error.name,":",error.message);
+      return;
+    }
+    
   
     let userId = Date.now(); ///creating own id's using Date.now() method  
     userId = Math.floor(userId/1000);
     
-    let today = new Date();
+    let today = new Date();//creating own date and time 
     let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     let dateTime = date + ' ' + time;

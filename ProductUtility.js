@@ -47,7 +47,7 @@ const isValidURL = (url) => {
 
 
 const isValidKeys= (productInput) =>{
-    const keys=["name","visit_url","icon_url","long_desp","short_desp","created_by","updated_by","comments","upvote","tags"] //required keys
+    const keys=["name","visit_url","icon_url","long_desp","short_desp","created_by","updated_by","comments","upvote","tags","images"] //required keys
     let inputKeys = Object.keys(productInput);
     // console.log(inputKeys);
     for(let i=0;i<inputKeys.length;i++)

@@ -20,6 +20,19 @@ app.get("/products", async (req, res) => {
 
 app.get("/products/:id", async (req, res) => {
   let id = req.params.id;
+  //id validation
+  try {
+    if(isNaN(id))
+    {
+      throw new TypeError("Invalid id");
+    }    
+  } catch (error) {
+    console.log(error.name,":",error.message);
+    res.status(400).json({
+      message : "Invalid id"
+    });
+    return;
+  }
   let product = await ProductService.getProductById(id);
   if (!product) {
     res.status(404).send("Product not found");
@@ -30,7 +43,6 @@ app.get("/products/:id", async (req, res) => {
 app.post("/products", async (req, res) => {
   let productInput = req.body;
   //validations
-
   try {
     const validationError = ProductUtility.isValidInputProduct(productInput);
     // console.log(validationError);
@@ -38,31 +50,18 @@ app.post("/products", async (req, res) => {
       throw new ReferenceError(`${validationError}`);
     }
   } catch (error) {
-    console.log(`Error : ${error.message} `);
+    console.log(error.name,":",error.message);
     res.status(400).json({
-      name: error.name,
-      message: error.message
+      error: error.message
     });
     return;
   }
 
   const result = await ProductService.addProduct(productInput);
-  if (result == "err1") {
-    res
-      .status(400)
-      .json({
-        err: "Duplicate Entry !(Product with similar name already exists)",
-      });
-    return;
-  } else if (result == "err2") {
-    res
-      .status(400)
-      .json({
-        err: "Duplicate Entry !(Product with similar url already exists)",
-      });
-    return;
-  }
-  res.status(201).json(result);
+  if(!result) res.status(400).json({
+    error:"Duplicate Entry",
+  })
+  else res.status(201).json(result);
 });
 
 ////PORT LISTEN/////

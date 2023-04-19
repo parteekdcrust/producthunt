@@ -3,6 +3,7 @@ class Product {
     tags=[];
     noOfUpvotes=0;
     noOfComments=0;
+    images=[];
 
     constructor(name,visit_url,icon_url,long_desp,short_desp,created_by,updated_by)
     {
@@ -29,10 +30,9 @@ class Product {
         this.noOfUpvotes++;
     }
 
-    getComments() {
-        console.log(this.comments);
+    addImages(image) {
+        this.images.push(image);
     }
-
     
 }
 
@@ -47,27 +47,17 @@ class Comment {
 }
  
 class Tag {
-    constructor(id,name)
+    constructor(id,tag)
     {
         this.id=id;
-        this.name=name;
+        this.tag=tag;
     }
 }
-
-
-
-// let abcd = new Product("abcd","abcd.com","abcd.com","long_descrip","short_descrip",1,"created_on");
-
-// abcd=JSON.stringify(abcd);
-// console.log(abcd);
-// const comment1 =  new Comment(1,"good",2);
-// abcd.addComments(comment1);
-
-// const tag1 = new Tag(1,"tag1");
-// abcd.addTag(tag1);
-
-// abcd.upvote();
-
-// console.log(abcd);
-
-module.exports = {Product, Comment, Tag};
+class Image {
+    constructor(id,url)
+    {
+        this.id=id;
+        this.url= url;
+    }
+}
+module.exports = {Product, Comment, Tag, Image};
